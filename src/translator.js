@@ -7,7 +7,7 @@ const endpoint = "https://translatorainoy.cognitiveservices.azure.com/";
 const region = "eastus";
 
 
- async function returnTranslatedTText(inputText, newLanguage)  {
+ async function returnTranslatedTText(inputText, newLanguage, oldLanguage)  {
      const translateCredential = {
         key: key,
         region,
@@ -17,22 +17,24 @@ const region = "eastus";
         body: [{text: inputText}],
         queryParameters: {
             to: newLanguage,
-            from:"he" ,
+            from: oldLanguage ,
         },
     });
      return  translateResponse.body[0].translations[0].text;
 
 }
 
-async function firstResponse(newLanguageName)  {
+async function firstResponse(inputText, newLanguageName)  {
     let newLanguageCode = await findLanguageHandler.findLanguageCodeByLanguageName(newLanguageName);
     // translate the text to the wanted language and return
     if (newLanguageCode != null){
-        let inputText = "אין בעיה";
-        return await returnTranslatedTText(inputText, newLanguageCode);
+        const translated = await returnTranslatedTText(inputText, newLanguageCode, "he");
+        if(translated != null) {
+            return {translated,newLanguageCode};
+        }
     }
     return null;
  }
 
 
-module.exports = {firstResponse};
+module.exports = {firstResponse, returnTranslatedTText};

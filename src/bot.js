@@ -1,4 +1,3 @@
-
 // Package
 const TelegramBot = require('node-telegram-bot-api');
 
@@ -8,81 +7,60 @@ const translatorHandler = require('./translator')
 
 // Initialize the bot
 const token = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token, {polling: true});
 
+let currLanguage = "en";
+
+// Start handler
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
     bot.sendMessage(chatId, "Welcome to ChuckBot! " +
         "Send 'set language [language]' to set your preferred language.");
 });
 
+// Set language handler
 bot.onText(/set language (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const userLanguage = match[1].toLowerCase(); // Extracted language preference
 
+    const exampleSetLanguageEnglish = "Please provide a valid language preference. For example, 'set language english'.";
     if (userLanguage) {
         // answer first response
-        let answer = await translatorHandler.firstResponse(userLanguage);
-        if (answer != null){
-            bot.sendMessage(chatId, answer);
-        }else {
+        let answer = await translatorHandler.firstResponse("אין בעיה", userLanguage);
+        if (answer != null) {
+            currLanguage = answer.newLanguageCode;
+            bot.sendMessage(chatId, answer.translated);
+        } else {
             bot.sendMessage(chatId,
-                "Please provide a valid language preference. For example, 'set language english'.");
+                exampleSetLanguageEnglish);
         }
     } else {
-        bot.sendMessage(chatId, "Please provide a valid language preference. For example, 'set language english'.");
+        bot.sendMessage(chatId, exampleSetLanguageEnglish);
     }
 });
 
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    // Check if the message is not a command
-    if (!msg.text.startsWith('/') && !msg.text.startsWith('set language')) {
-        bot.sendMessage(chatId, "I'm sorry, I don't understand that command. " +
-            "Send 'set language [language]' to set your preferred language.");
-    }
-});
 
 // Handle other messages
 
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
-    // Check for valid int
-    const number = parseInt(text, 10);
-    if (!isNaN(number) && number >= 1 && number <= 101) {
-        bot.sendMessage(chatId, QuoteHandler.getQuote(number).retValue);
+const numberPattern = /^(([0-9])+)$/;
+
+bot.onText(numberPattern, async (msg, match) => {
+        const chatId = msg.chat.id;
+        const number = parseInt(match[0]);
+        console.log(number);
+
+        if (number >= 1 && number <= 101) {
+            //todo add chuckScraper
+            try {
+                let inputText = QuoteHandler.getQuote(number).retValue;
+                let answer = await translatorHandler.returnTranslatedTText(inputText, currLanguage, "en");
+                bot.sendMessage(chatId, answer);
+            } catch (e) {
+                bot.sendMessage(chatId, e);
+            }
+        } else {
+            // Not valid int in the specified range.
+            bot.sendMessage(chatId, 'Please send an integer between 1 and 101');
+        }
     }
-    else {
-        // Not valid int in the specified range.
-        bot.sendMessage(chatId, 'Please send an integer between 1 and 101');
-    }
-});
-
-
-
-
-//
-//
-// // Init TextBot
-// bot.onText(/\/start/, (msg) => {
-//     const chatId = msg.chat.id;
-//     bot.sendMessage(chatId, 'Welcome to the FridayAuraBot!' +
-//         '\nHow can I assist you?\nPossible use cases:\n\/todo: for appending to a todolist\n\/idea: for random ideas\n\/thoughts: for deep thoughts\n\/blog: for adding blog titles\n\/showtodo: to show todolist\n\/done: to remove item from todolist\n\/showtitles to show all blog titles');
-// });
-//
-// // Event listener
-// bot.on('message', (msg) => {
-//     const chatId = msg.chat.id;
-//     const messageText = msg.text;
-//
-//     // todo - Process the incoming message here
-//     // for example:
-//     if (messageText === '/start') {
-//         bot.sendMessage(chatId, 'Welcome to the bot!');
-//     }
-//     else {
-//         bot.sendMessage(chatId, messageText);
-//     }
-// });
-//
+);
