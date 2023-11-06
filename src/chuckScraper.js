@@ -2,6 +2,8 @@
 const axios = require('axios');
 const cheerio = require("cheerio");
 const fs = require("fs");
+
+
 async function chuckScraper() {
     axios.get('https://app.scrapingbee.com/api/v1', {
         params: {
@@ -30,4 +32,4 @@ async function chuckScraper() {
             console.error('Error:', error);
         });
 }
-modul.exports = {chuckScraper};
+module.exports = {chuckScraper};
