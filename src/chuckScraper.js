@@ -1,18 +1,17 @@
-
 const axios = require('axios');
 const cheerio = require("cheerio");
-const fs = require("fs");
 
+// const scrapingBeeApiKey = process.env.SCRAPINGBEE_API_KEY;
+const scrapingBeeApiKey = "GCCT3BGLWVM2B93E9MMMF96MEWFDP33YRRIEMNE4MCLGKRI9UPU85X2GIMYK5QBZG5ML6X32CUTO8608";
 
-async function chuckScraper(number) {
-    axios.get('https://app.scrapingbee.com/api/v1', {
+async function chuckScraper() {
+      const response = await axios.get('https://app.scrapingbee.com/api/v1', {
         params: {
-            'api_key': 'DFJ5APHYWVKPUCX6GRJGXRLWTG1Q8SLRMZQMQZLQO447QEP8B3MFERO52748WHD5D62T0MPQISB032CG',
+            'api_key': scrapingBeeApiKey,
             'url': 'https://parade.com/968666/parade/chuck-norris-jokes/',
-            // 'premium_proxy': 'true',
             'stealth_proxy': 'true',
         }
-    }).then(function (response) {
+    })
         const html = response.data;
         const $ = cheerio.load(html);
 
@@ -21,17 +20,10 @@ async function chuckScraper(number) {
         $('ol').find('li')
             .each((index, element) => {
                 quotes.push( $(element).text().trim());
+                
             });
+        return quotes;
 
-
-        // Check if the requested quote number is valid
-        if (number > 0 && number < quotes.length) {
-            return quotes[number-1];    
-        }
-        //todo else 
-    })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
 }
+
 module.exports = {chuckScraper};

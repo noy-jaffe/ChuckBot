@@ -2,13 +2,13 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 // functions
-const ScraperHandler = require("./chuckScraper")
+const scraperHandler = require('./chuckScraper');
 const translatorHandler = require('./translator')
 
 // Initialize the bot
-// const { BOT_TOKEN } = process.env;
-const token = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
-const bot = new TelegramBot(token, {polling: true});
+// const botApiKey = process.env.BOT_API_KEY;
+const botApiKey = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
+const bot = new TelegramBot(botApiKey, {polling: true});
 
 // Response messages
 const welcomeText = "Welcome to ChuckBot! Please send 'set language [language]' to set your preferred language.";
@@ -17,12 +17,12 @@ const noProblemTextHebrew = "אין בעיה";
 const oldLanguage = "en";
 const anIntegerBetween1And101 = 'Please send an integer between 1 and 101';
 const menuResponse = "Please choose from one of the options below:\n" +
-    "1." + exampleSetLanguageEnglish + "\n" + "2." + anIntegerBetween1And101;
+        "1." + exampleSetLanguageEnglish + "\n" + "2." + anIntegerBetween1And101;
 
 // Error messages
 const havingProblemMessage = "Sorry for the inconvinient, we are having some trouble handling your'e request."+
                 "Please try again.";    
-const errMessage = "Having proble while scraping the website";
+const errMessage = "Having problem while scraping the website";
 
 
 // Regexps
@@ -32,6 +32,22 @@ const numberPattern = /^(([0-9])+)$/;
 
 // Global param
 let currLanguage = oldLanguage;
+let initialized = 0;
+let quotesArray = null;
+
+
+// Initialize chuck quotes
+bot.on('message', async (msg) => {
+    if (initialized == 0) {
+        try {
+            quotesArray = await scraperHandler.chuckScraper();
+            initialized = 1;
+        } catch (e) {
+            console.error(e);
+        }
+    }
+});
+
 
 // Start handler
 bot.onText(startRegexp, (msg) => {
@@ -67,22 +83,23 @@ bot.onText(numberPattern, async (msg, match) => {
         const number = parseInt(match[0]);
 
         if (number >= 1 && number <= 101) {
+            let inputText;
             try {
-                let inputText = ScraperHandler(number);
-                if(inputText != null){
+                // inputText = await scraperHandler.chuckScraper(number);
+                inputText = quotesArray[number-1];
+                if(inputText !== null){
                     let answer = await translatorHandler.returnTranslatedTText(inputText, currLanguage, oldLanguage);
                     bot.sendMessage(chatId, answer);
                 } else{
                     console.error(errMessage);
-                    bot.sendMessage(chatId, havingProblemMessage);
                 }
                 
             } catch (e) {
-                bot.sendMessage(chatId, e);
+                console.error(e);
             }
         } else {
             // Not valid int in the specified range.
-            bot.sendMessage(chatId, anIntegerBetween1And101);
+            bot.sendMessage(chatId, await translatorHandler.returnTranslatedTText(anIntegerBetween1And101, currLanguage, oldLanguage));
         }
     }
 );
@@ -92,7 +109,6 @@ bot.onText(numberPattern, async (msg, match) => {
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
-
     if (!startRegexp.test(text) && !setLanguageRegexp.test(text) && !numberPattern.test(text)) {
         bot.sendMessage(chatId, menuResponse);
     }
