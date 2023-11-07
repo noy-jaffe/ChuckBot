@@ -6,8 +6,8 @@ const scraperHandler = require('./chuckScraper');
 const translatorHandler = require('./translator')
 
 // Initialize the bot
-const botApiKey = process.env.BOT_API_KEY;
-// const botApiKey = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
+// const botApiKey = process.env.BOT_API_KEY;
+const botApiKey = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
 const bot = new TelegramBot(botApiKey, {polling: true});
 
 // Response messages
@@ -36,17 +36,17 @@ let initialized = 0;
 let quotesArray = null;
 
 
-// Initialize chuck quotes
-bot.on('message', async (msg) => {
-    if (initialized == 0) {
-        try {
-            quotesArray = await scraperHandler.chuckScraper();
-            initialized = 1;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-});
+// // Initialize chuck quotes
+// bot.on('message', async (msg) => {
+//     if (initialized == 0) {
+//         try {
+//             quotesArray = await scraperHandler.chuckScraper();
+//             initialized = 1;
+//         } catch (e) {
+//             console.error(e);
+//         }
+//     }
+// });
 
 
 // Start handler
@@ -81,6 +81,16 @@ bot.onText(setLanguageRegexp, async (msg, match) => {
 bot.onText(numberPattern, async (msg, match) => {
         const chatId = msg.chat.id;
         const number = parseInt(match[0]);
+
+        if (initialized == 0) {
+            try {
+                quotesArray = await scraperHandler.chuckScraper();
+                console.log(quotesArray);
+                initialized = 1;
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
         if (number >= 1 && number <= 101) {
             let inputText;
