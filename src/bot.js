@@ -35,20 +35,6 @@ let currLanguage = oldLanguage;
 let initialized = 0;
 let quotesArray = null;
 
-
-// // Initialize chuck quotes
-// bot.on('message', async (msg) => {
-//     if (initialized == 0) {
-//         try {
-//             quotesArray = await scraperHandler.chuckScraper();
-//             initialized = 1;
-//         } catch (e) {
-//             console.error(e);
-//         }
-//     }
-// });
-
-
 // Start handler
 bot.onText(startRegexp, (msg) => {
     const chatId = msg.chat.id;
@@ -85,7 +71,6 @@ bot.onText(numberPattern, async (msg, match) => {
         if (initialized == 0) {
             try {
                 quotesArray = await scraperHandler.chuckScraper();
-                console.log(quotesArray);
                 initialized = 1;
             } catch (e) {
                 console.error(e);
