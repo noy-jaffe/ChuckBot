@@ -3,14 +3,12 @@ const TelegramBot = require('node-telegram-bot-api');
 
 // functions
 const ScraperHandler = require("./chuckScraper")
-const QuoteHandler = require('./source/getQuote')
 const translatorHandler = require('./translator')
 
 // Initialize the bot
 // const { BOT_TOKEN } = process.env;
 const token = '6663098087:AAEsGkUdlZI121bvDh49nhh0q4w-Eq6PXGw';
 const bot = new TelegramBot(token, {polling: true});
-bot.setWebHook()
 
 // Response messages
 const welcomeText = "Welcome to ChuckBot! Please send 'set language [language]' to set your preferred language.";
@@ -18,6 +16,14 @@ const exampleSetLanguageEnglish = "Please provide a valid language preference. F
 const noProblemTextHebrew = "אין בעיה";
 const oldLanguage = "en";
 const anIntegerBetween1And101 = 'Please send an integer between 1 and 101';
+const menuResponse = "Please choose from one of the options below:\n" +
+    "1." + exampleSetLanguageEnglish + "\n" + "2." + anIntegerBetween1And101;
+
+// Error messages
+const havingProblemMessage = "Sorry for the inconvinient, we are having some trouble handling your'e request."+
+                "Please try again.";    
+const errMessage = "Having proble while scraping the website";
+
 
 // Regexps
 const startRegexp = /\/start/;
@@ -26,20 +32,6 @@ const numberPattern = /^(([0-9])+)$/;
 
 // Global param
 let currLanguage = oldLanguage;
-let initialized = null;
-
-
-// Initialize chuck quotes
-bot.on('message', (msg) => {
-    if (initialized == null) {
-        try {
-            ScraperHandler.chuckScraper();
-            initialized = 1;
-        } catch (e) {
-            console.error(e);
-        }
-    }
-});
 
 // Start handler
 bot.onText(startRegexp, (msg) => {
@@ -76,9 +68,15 @@ bot.onText(numberPattern, async (msg, match) => {
 
         if (number >= 1 && number <= 101) {
             try {
-                let inputText = QuoteHandler.getQuote(number).retValue;
-                let answer = await translatorHandler.returnTranslatedTText(inputText, currLanguage, oldLanguage);
-                bot.sendMessage(chatId, answer);
+                let inputText = ScraperHandler(number);
+                if(inputText != null){
+                    let answer = await translatorHandler.returnTranslatedTText(inputText, currLanguage, oldLanguage);
+                    bot.sendMessage(chatId, answer);
+                } else{
+                    console.error(errMessage);
+                    bot.sendMessage(chatId, havingProblemMessage);
+                }
+                
             } catch (e) {
                 bot.sendMessage(chatId, e);
             }
@@ -89,13 +87,13 @@ bot.onText(numberPattern, async (msg, match) => {
     }
 );
 
+
 // Other invalid message
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
     const text = msg.text;
 
     if (!startRegexp.test(text) && !setLanguageRegexp.test(text) && !numberPattern.test(text)) {
-        bot.sendMessage(chatId, "Please choose from one of the options below:\n" +
-            "1." + exampleSetLanguageEnglish + "\n" + "2." + anIntegerBetween1And101);
+        bot.sendMessage(chatId, menuResponse);
     }
 })
