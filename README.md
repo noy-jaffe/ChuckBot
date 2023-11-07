@@ -1,5 +1,5 @@
 # ChuckBot
-A telegram bot that will drive you crazy with Chuck Norris quotes.
+A telegram bot that will drive you crazy with Chuck Norris quotes :sunglasses:
 
 ## Supported Messages
 * Set language option by sending 'set language [language]' to set your preferred language.
