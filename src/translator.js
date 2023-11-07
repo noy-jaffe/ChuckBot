@@ -1,5 +1,4 @@
 const TextTranslationClient = require("@azure-rest/ai-translation-text").default
-
 const findLanguageHandler = require('./source/getLanguageCode')
 
 const key = "18f077c3a4b94f039228248acb45a949";

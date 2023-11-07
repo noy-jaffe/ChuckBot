@@ -1,8 +1,8 @@
 const axios = require('axios');
 const cheerio = require("cheerio");
 
-// const scrapingBeeApiKey = process.env.SCRAPINGBEE_API_KEY;
-const scrapingBeeApiKey = "GCCT3BGLWVM2B93E9MMMF96MEWFDP33YRRIEMNE4MCLGKRI9UPU85X2GIMYK5QBZG5ML6X32CUTO8608";
+const scrapingBeeApiKey = process.env.SCRAPINGBEE_API_KEY;
+// const scrapingBeeApiKey = "GCCT3BGLWVM2B93E9MMMF96MEWFDP33YRRIEMNE4MCLGKRI9UPU85X2GIMYK5QBZG5ML6X32CUTO8608";
 
 async function chuckScraper() {
       const response = await axios.get('https://app.scrapingbee.com/api/v1', {
